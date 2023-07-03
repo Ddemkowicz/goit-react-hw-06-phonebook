@@ -1,15 +1,37 @@
 import PropTypes from 'prop-types';
 import css from './ContactForm.module.css';
 import React from 'react';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from 'redux/selectors';
+import { addContact } from 'redux/contactsSlice';
 
-const ContactForm = props => {
-  const {
-    name,
-    number,
+const ContactForm = () => {
+  const [values, setValues] = useState({
+    name: '',
+    number: '',
+  });
 
-    handleChange,
-    handleFormSubmit,
-  } = props;
+  const contacts = useSelector(getContacts);
+
+  const dispatch = useDispatch();
+
+  const handleChange = e => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+  };
+
+  const handleFormSubmit = e => {
+    e.preventDefault();
+    const existingContact = contacts.find(
+      contact => contact.name.toLowerCase() === values.name.toLowerCase()
+    );
+    if (existingContact) {
+      alert(`"${values.name}" in already in contacts.`);
+    } else {
+      dispatch(addContact(values.name, values.number));
+      setValues({ name: '', number: '' });
+    }
+  };
 
   return (
     <form onSubmit={handleFormSubmit}>
@@ -20,7 +42,7 @@ const ContactForm = props => {
           className={css.input}
           type="text"
           name="name"
-          value={name}
+          value={values.name}
           onChange={handleChange}
           pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
           title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
@@ -31,7 +53,7 @@ const ContactForm = props => {
           className={css.input}
           type="tel"
           name="number"
-          value={number}
+          value={values.number}
           onChange={handleChange}
           pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
@@ -46,11 +68,11 @@ const ContactForm = props => {
 };
 
 ContactForm.propTypes = {
-  name: PropTypes.string.isRequired,
-  number: PropTypes.string.isRequired,
-  handleNameChange: PropTypes.func.isRequired,
-  handleNumberChange: PropTypes.func.isRequired,
-  handleFormSubmit: PropTypes.func.isRequired,
+  name: PropTypes.string,
+  number: PropTypes.string,
+  handleNameChange: PropTypes.func,
+  handleNumberChange: PropTypes.func,
+  handleFormSubmit: PropTypes.func,
 };
 
 export default ContactForm;
